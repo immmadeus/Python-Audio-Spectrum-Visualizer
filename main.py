@@ -1,11 +1,27 @@
 import pyaudio
+import os
 import sys
-
+import sys
 import pyaudio
 import pygame
-
 from audiovisualizer import update_spectrum
 from visualizergui import run_ui
+
+# Function to handle file paths correctly when running as an executable
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and PyInstaller """
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(__file__), relative_path)
+
+
+# Load icon with safe path handling
+icon_path = resource_path("icon-1628258_1280.ico")
+if os.path.exists(icon_path):
+    icon = pygame.image.load(icon_path)
+    pygame.display.set_icon(icon)
+else:
+    print("Warning: Icon file not found!")
 
 # Initialize PyAudio
 p = pyaudio.PyAudio()
