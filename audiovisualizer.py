@@ -1,39 +1,37 @@
 import numpy as np
 import pyaudio
 import pygame
+import visualizergui
 from visualizergui import handle_ui_events
 
-# Initialize Pygame
+# Initialize Pygame and PyAudio
 pygame.init()
-WIDTH, HEIGHT = 1280, 400
+WIDTH, HEIGHT = visualizergui.WIDTH, visualizergui.HEIGHT
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-
-# Initialize PyAudio
 p = pyaudio.PyAudio()
 
-# Get default input device info
+# Get default audio input info
 device_info = p.get_default_input_device_info()
 device_name = device_info['name']  # Get the device name
 
-# Default config
+# Default audio config
 FORMAT = pyaudio.paInt16
 CHUNK = 1024  # Buffer size
 CHANNELS = int(device_info['maxInputChannels'])  # Get the number of channels from the device
 RATE = int(device_info['defaultSampleRate'])  # Sampling rate of input
 NUM_BARS = WIDTH // 5  # Number of bars in visualization
-font = pygame.font.SysFont('franklingothicmedium', 12)
+font = pygame.font.SysFont('franklingothicmedium', 13)
 
 # Audio stream setup
 def create_stream():
-    """Create a persistent audio stream."""
     return p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, input_device_index=0, frames_per_buffer=CHUNK)
 
 # Function to update the spectrum based on audio input
 def update_spectrum(threshold, min_bar_height, smoothing_factor):
-    """Continuously captures audio and updates the spectrum display with smoothing."""
     stream = create_stream()
     smoothed_spectrum = np.zeros(NUM_BARS)
     running = True
+    clock = pygame.time.Clock()  # Limit the frame rate
 
     while running:
         for event in pygame.event.get():
@@ -41,23 +39,34 @@ def update_spectrum(threshold, min_bar_height, smoothing_factor):
                 running = False
             threshold, min_bar_height, smoothing_factor, start_program = handle_ui_events()
 
-            # If the user pressed Enter, start the program
             if start_program:
                 running = False
 
         data = stream.read(CHUNK, exception_on_overflow=False)
         audio_data = np.frombuffer(data, dtype=np.int16)
-        audio_data = audio_data - np.mean(audio_data)  # Remove DC offset
+        audio_data = audio_data - np.mean(audio_data)  # Removes DC offset
 
+        if CHANNELS > 1:
+            audio_data = audio_data[0::CHANNELS]
+
+        # Apply FFT to the audio data
         fft_data = np.abs(np.fft.rfft(audio_data))
         fft_data /= np.max(fft_data) + 1e-6  # Normalize
         fft_data = np.log(fft_data + 1)  # Apply log scaling
 
         indices = np.linspace(0, len(fft_data) - 1, NUM_BARS).astype(int)
         new_spectrum = fft_data[indices]
-
         smoothed_spectrum = (smoothing_factor * new_spectrum) + ((1 - smoothing_factor) * smoothed_spectrum)
+
+        # Apply threshold and minimum bar height
+        min_magnitude = min_bar_height / (HEIGHT - 50)
+        smoothed_spectrum = np.where(smoothed_spectrum <= threshold, min_magnitude, smoothed_spectrum)
+
+        # Draw the spectrum on screen
         draw_spectrum(smoothed_spectrum, min_bar_height)
+
+        # Limit the frame rate to 60 FPS
+        clock.tick(60)
 
     stream.stop_stream()
     stream.close()
@@ -68,11 +77,11 @@ def draw_spectrum(spectrum, min_bar_height):
     screen.fill((0, 0, 0))
     bar_width = WIDTH // NUM_BARS
 
-    # Define label positions
+    # Define label positions for frequency labels
     label_positions = np.linspace(0, NUM_BARS - 1, WIDTH // 100, dtype=int)
     label_y = 10  # Label text Y position
-    max_bar_area = HEIGHT - 50  # Leave space at the top for labels
 
+    # Draw frequency labels
     for i in label_positions:
         freq = (i * (RATE / 2)) / (NUM_BARS - 1)
         freq_text = font.render(f'{int(freq)} Hz', True, (255, 255, 255))
@@ -80,14 +89,15 @@ def draw_spectrum(spectrum, min_bar_height):
         label_x = min(i * bar_width + 2, WIDTH - text_width - 5)
         screen.blit(freq_text, (label_x, label_y))  # Keep labels at the top
 
-        # Draw the vertical white line next to the label
+        # Draw the vertical line next to the label
         pygame.draw.line(screen, (64, 64, 64), (label_x - 4, label_y),
                          (label_x - 4, HEIGHT), 2)
 
+    # Draw the bars representing the spectrum
     for i, magnitude in enumerate(spectrum):
         height = int(magnitude * (HEIGHT - 50))  # Scale bars within max area
-        height = max(height, min_bar_height)  # Ensure minimum size
-        color = get_color_for_frequency(i, NUM_BARS)
+        height = max(height, min_bar_height)  # Ensure minimum size for the bars
+        color = get_color_for_frequency(i, NUM_BARS)  # Color based on frequency
         pygame.draw.rect(screen, color, (i * bar_width, HEIGHT - height, bar_width - 2, height))
 
     pygame.display.flip()
@@ -99,3 +109,4 @@ def get_color_for_frequency(frequency_index, num_bars):
     green = int(0 * (1 - ratio) + 0 * ratio)
     blue = int(0 * (1 - ratio) + 255 * ratio)
     return red, green, blue
+
