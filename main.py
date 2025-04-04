@@ -3,7 +3,7 @@ import sys
 import pygame
 import audiovisualizer
 from audiovisualizer import update_spectrum
-from visualizergui import run_ui
+import visualizergui
 
 # Function to handle file paths correctly when running as an executable
 def resource_path(relative_path):
@@ -21,18 +21,14 @@ else:
     print("Warning: Icon file not found!")
 
 def main():
-    # Call the UI and get the values
-    threshold, min_bar_height, smoothing_factor = run_ui()
-    # Set the window title to the input device name
+    # Call the UI and get values
+    threshold, min_bar_height, smoothing_factor = visualizergui.run_ui()
     pygame.display.set_caption(f"Audio Spectrum Visualizer - Input: {audiovisualizer.device_name}")
-    # Now you can proceed with the rest of the program (visualizer, etc.) with these values
     try:
         update_spectrum(threshold, min_bar_height, smoothing_factor)
     finally:
-        # Ensure Pygame is properly quit after the program ends
         pygame.quit()
         sys.exit()
-
 
 if __name__ == "__main__":
     main()
