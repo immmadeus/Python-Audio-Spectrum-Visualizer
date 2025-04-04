@@ -3,7 +3,7 @@ import pygame
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 1280, 400
+WIDTH, HEIGHT = 960, 400
 WHITE = (255, 255, 255)
 GREEN = (50, 150, 50)
 BLACK = (0, 0, 0)

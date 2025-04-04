@@ -1,11 +1,13 @@
 import numpy as np
 import pyaudio
 import pygame
+
+import visualizergui
 from visualizergui import handle_ui_events
 
 # Initialize Pygame
 pygame.init()
-WIDTH, HEIGHT = 1280, 400
+WIDTH, HEIGHT = visualizergui.WIDTH, visualizergui.HEIGHT
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
 # Initialize PyAudio
@@ -15,13 +17,14 @@ p = pyaudio.PyAudio()
 device_info = p.get_default_input_device_info()
 device_name = device_info['name']  # Get the device name
 
-# Default config
+# Default audio config
 FORMAT = pyaudio.paInt16
 CHUNK = 1024  # Buffer size
 CHANNELS = int(device_info['maxInputChannels'])  # Get the number of channels from the device
 RATE = int(device_info['defaultSampleRate'])  # Sampling rate of input
 NUM_BARS = WIDTH // 5  # Number of bars in visualization
 font = pygame.font.SysFont('franklingothicmedium', 12)
+
 
 # Audio stream setup
 def create_stream():
@@ -49,6 +52,12 @@ def update_spectrum(threshold, min_bar_height, smoothing_factor):
         audio_data = np.frombuffer(data, dtype=np.int16)
         audio_data = audio_data - np.mean(audio_data)  # Remove DC offset
 
+        if CHANNELS == 2:   # Mix to mono by averaging left and right channels
+            left_channel = audio_data[0::2]  # Extract left channel samples
+            right_channel = audio_data[1::2]  # Extract right channel samples
+            audio_data = (left_channel + right_channel) / 2
+
+        #apply fft
         fft_data = np.abs(np.fft.rfft(audio_data))
         fft_data /= np.max(fft_data) + 1e-6  # Normalize
         fft_data = np.log(fft_data + 1)  # Apply log scaling
@@ -71,7 +80,6 @@ def draw_spectrum(spectrum, min_bar_height):
     # Define label positions
     label_positions = np.linspace(0, NUM_BARS - 1, WIDTH // 100, dtype=int)
     label_y = 10  # Label text Y position
-    max_bar_area = HEIGHT - 50  # Leave space at the top for labels
 
     for i in label_positions:
         freq = (i * (RATE / 2)) / (NUM_BARS - 1)
