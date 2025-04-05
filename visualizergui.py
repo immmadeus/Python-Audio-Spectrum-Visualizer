@@ -3,10 +3,14 @@ import pygame
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 960, 400
 WHITE = (255, 255, 255)
 GREEN = (50, 150, 50)
 BLACK = (0, 0, 0)
+
+# To be made adjustable soon...
+WIDTH, HEIGHT = 960, 400
+START_COLOR = (200 , 0, 0)
+END_COLOR = (0, 0, 200)
 FONT = pygame.font.SysFont('franklingothicmedium', 16)
 
 # UI Elements
@@ -104,7 +108,7 @@ def handle_ui_events():
                                                  user_input[active_box][cursor_pos[active_box]:]
                         cursor_pos[active_box] += 1
 
-    # Check for empty input fields before starting
+    # Check for empty input fields before assigning values.
     try:
         threshold = (float(user_input["threshold"]) / 100) if user_input["threshold"] else 0.025
         min_bar_height = float(user_input["min_bar_height"]) if user_input["min_bar_height"] else 5

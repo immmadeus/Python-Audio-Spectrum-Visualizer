@@ -44,7 +44,7 @@ def update_spectrum(threshold, min_bar_height, smoothing_factor):
 
         data = stream.read(CHUNK, exception_on_overflow=False)
         audio_data = np.frombuffer(data, dtype=np.int16)
-        audio_data = audio_data - np.mean(audio_data)  # Removes DC offset
+        audio_data = audio_data - np.mean(audio_data)  # Remove DC offset
 
         if CHANNELS > 1:
             audio_data = audio_data[0::CHANNELS]
@@ -77,19 +77,20 @@ def draw_spectrum(spectrum, min_bar_height):
     screen.fill((0, 0, 0))
     bar_width = WIDTH // NUM_BARS
 
-    # Define label positions for frequency labels
+    # Define label positions for frequencies
     label_positions = np.linspace(0, NUM_BARS - 1, WIDTH // 100, dtype=int)
-    label_y = 10  # Label text Y position
+    label_y = 10
 
     # Draw frequency labels
     for i in label_positions:
+
         freq = (i * (RATE / 2)) / (NUM_BARS - 1)
         freq_text = font.render(f'{int(freq)} Hz', True, (255, 255, 255))
         text_width = freq_text.get_width()
         label_x = min(i * bar_width + 2, WIDTH - text_width - 5)
         screen.blit(freq_text, (label_x, label_y))  # Keep labels at the top
 
-        # Draw the vertical line next to the label
+        # Draw the vertical line next to label
         pygame.draw.line(screen, (64, 64, 64), (label_x - 4, label_y),
                          (label_x - 4, HEIGHT), 2)
 
@@ -102,11 +103,13 @@ def draw_spectrum(spectrum, min_bar_height):
 
     pygame.display.flip()
 
+#blends two colors together for gradient
 def get_color_for_frequency(frequency_index, num_bars):
-    """Returns an RGB color based on frequency index, with a gradient between two colors."""
-    ratio = frequency_index / (num_bars - 1)
-    red = int(255 * (1 - ratio) + 0 * ratio)
-    green = int(0 * (1 - ratio) + 0 * ratio)
-    blue = int(0 * (1 - ratio) + 255 * ratio)
-    return red, green, blue
+    start_color = visualizergui.START_COLOR
+    end_color = visualizergui.END_COLOR
 
+    ratio = frequency_index / (num_bars - 1) if num_bars > 1 else 0
+    return tuple(
+        int(start_c * (1 - ratio) + end_c * ratio)
+        for start_c, end_c in zip(start_color, end_color)
+    )
