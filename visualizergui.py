@@ -3,29 +3,33 @@ import pygame
 pygame.init()
 
 # Constants
-WIDTH, HEIGHT = 960, 400
 WHITE = (255, 255, 255)
 GREEN = (50, 150, 50)
 BLACK = (0, 0, 0)
+
+# To be made adjustable via GUI soon...
+WIDTH, HEIGHT = 1024, 240
+START_COLOR = (255, 0, 0)
+END_COLOR = (0, 0, 255)
 FONT = pygame.font.SysFont('franklingothicmedium', 16)
 
 # UI Elements
 text_boxes = {
-    "threshold": pygame.Rect(200, 10, 100, 25),
-    "min_bar_height": pygame.Rect(200, 40, 100, 25),
-    "smoothing_factor": pygame.Rect(200, 70, 100, 25)
+    "threshold": pygame.Rect(200, 10, 80, 25),
+    "min_bar_height": pygame.Rect(200, 40, 80, 25),
+    "smoothing_factor": pygame.Rect(200, 70, 80, 25),
 }
 
 # default values
 user_input = {
     "threshold": "2.5",
     "min_bar_height": "5",
-    "smoothing_factor": "0.25"
+    "smoothing_factor": "0.25",
 }
 
 active_box = None
 cursor_pos = {key: len(user_input[key]) for key in text_boxes}  # Cursor position per box
-start_button = pygame.Rect(500, 150, 150, 40)
+start_button = pygame.Rect(WIDTH//2, HEIGHT//2, 140, 40)
 
 # Draw the UI, including text boxes and the blinking cursor.
 def draw_ui(screen):
@@ -34,7 +38,7 @@ def draw_ui(screen):
     labels = {
         "threshold": "Minimum Threshold %:",
         "min_bar_height": "Min Bar Height in pixels:",
-        "smoothing_factor": "Smoothing Factor (0 to 1):"
+        "smoothing_factor": "Smoothing Factor (0 to 1):",
     }
 
     for key, rect in text_boxes.items():
@@ -59,7 +63,6 @@ def draw_ui(screen):
     screen.blit(start_text, (start_button.x + 25, start_button.y + 10))
 
     pygame.display.flip()
-
 
 def handle_ui_events():
     """Handle user input, including text input and button clicks."""
@@ -104,16 +107,16 @@ def handle_ui_events():
                                                  user_input[active_box][cursor_pos[active_box]:]
                         cursor_pos[active_box] += 1
 
-    # Check for empty input fields before starting
+    # Check for empty input fields before assigning values.
     try:
         threshold = (float(user_input["threshold"]) / 100) if user_input["threshold"] else 0.025
         min_bar_height = float(user_input["min_bar_height"]) if user_input["min_bar_height"] else 5
         smoothing_factor = float(user_input["smoothing_factor"]) if user_input["smoothing_factor"] else 0.25
+
     except ValueError:
         threshold, min_bar_height, smoothing_factor = 0.025, 5, 0.25  # Default values in case of invalid input
 
     return threshold, min_bar_height, smoothing_factor, start_program
-
 
 def run_ui():
     """Runs the UI and returns user settings when 'Start' is clicked."""
