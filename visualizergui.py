@@ -1,6 +1,23 @@
+import sys
+import os
 import pygame
-
 pygame.init()
+
+pygame.display.set_caption(f"Audio Spectrum Visualizer - Settings")
+
+# Function to handle file paths correctly when running as an executable
+def resource_path(relative_path):
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.join(os.path.dirname(__file__), relative_path)
+
+# Load icon with safe path handling
+icon_path = resource_path("icon-1628258_1280.ico")
+if os.path.exists(icon_path):
+    icon = pygame.image.load(icon_path)
+    pygame.display.set_icon(icon)
+else:
+    print("Warning: Icon file not found!")
 
 # Constants
 WHITE = (255, 255, 255)
@@ -9,15 +26,16 @@ BLACK = (0, 0, 0)
 
 # To be made adjustable via GUI soon...
 WIDTH, HEIGHT = 1024, 240
+FPS = 60
 START_COLOR = (255, 0, 0)
 END_COLOR = (0, 0, 255)
-FONT = pygame.font.SysFont('franklingothicmedium', 16)
+FONT = pygame.font.SysFont('franklingothicmedium', 20, False, True)
 
 # UI Elements
 text_boxes = {
-    "threshold": pygame.Rect(200, 10, 80, 25),
-    "min_bar_height": pygame.Rect(200, 40, 80, 25),
-    "smoothing_factor": pygame.Rect(200, 70, 80, 25),
+    "threshold": pygame.Rect(250, 10, 80, 25),
+    "min_bar_height": pygame.Rect(250, 40, 80, 25),
+    "smoothing_factor": pygame.Rect(250, 70, 80, 25),
 }
 
 # default values
@@ -29,7 +47,7 @@ user_input = {
 
 active_box = None
 cursor_pos = {key: len(user_input[key]) for key in text_boxes}  # Cursor position per box
-start_button = pygame.Rect(WIDTH//2, HEIGHT//2, 140, 40)
+start_button = pygame.Rect(WIDTH//2, HEIGHT//2, 170, 40)
 
 # Draw the UI, including text boxes and the blinking cursor.
 def draw_ui(screen):
@@ -43,12 +61,12 @@ def draw_ui(screen):
 
     for key, rect in text_boxes.items():
         label = FONT.render(labels[key], True, WHITE)
-        screen.blit(label, (10, rect.y + 5))
+        screen.blit(label, (10, rect.y + 3))
         pygame.draw.rect(screen, WHITE, rect, 2)
 
         # Render text
         text_surface = FONT.render(user_input[key], True, WHITE)
-        screen.blit(text_surface, (rect.x + 5, rect.y + 5))
+        screen.blit(text_surface, (rect.x + 5, rect.y + 3))
 
         # Cursor blinking logic
         if key == active_box:
@@ -121,7 +139,6 @@ def handle_ui_events():
 def run_ui():
     """Runs the UI and returns user settings when 'Start' is clicked."""
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption("Audio Spectrum Visualizer - Settings")
 
     while True:
         draw_ui(screen)

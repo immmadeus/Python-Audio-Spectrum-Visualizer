@@ -20,7 +20,7 @@ CHUNK = 1024  # Buffer size
 CHANNELS = int(device_info['maxInputChannels'])  # Get the number of channels from the device
 RATE = int(device_info['defaultSampleRate'])  # Sampling rate of input
 NUM_BARS = WIDTH // 5  # Number of bars in visualization
-font = pygame.font.SysFont('franklingothicmedium', 12)
+font = pygame.font.SysFont('franklingothicmedium', 13, False, True)
 
 # Audio stream setup
 def create_stream():
@@ -45,8 +45,8 @@ def draw_spectrum(spectrum, min_bar_height):
         screen.blit(freq_text, (label_x, label_y))  # Keep labels at the top
 
         # Draw vertical lines next to label
-        pygame.draw.line(screen, (96, 96, 96), (label_x - 4, label_y),
-                             (label_x - 4, HEIGHT), 2)
+        pygame.draw.line(screen, (96, 96, 96), (label_x - 3, label_y),
+                             (label_x - 3, HEIGHT), bar_width - 2)
 
     # Draw the bars representing the spectrum
     for i, magnitude in enumerate(spectrum):
@@ -77,7 +77,7 @@ def update_spectrum(threshold, min_bar_height, smoothing_factor):
 
     while running:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT:
+            if event.type is pygame.QUIT:
                 running = False
             threshold, min_bar_height, smoothing_factor, start_program = handle_ui_events()
 
@@ -91,10 +91,18 @@ def update_spectrum(threshold, min_bar_height, smoothing_factor):
         if CHANNELS > 1:
             audio_data = audio_data[0::CHANNELS]
 
-        # Apply FFT to the audio data
-        fft_data = np.abs(np.fft.rfft(audio_data))
-        fft_data /= np.max(fft_data) + 1e-6  # Normalize
-        fft_data = np.log(fft_data + 1)  # Apply log scaling
+        # Apply hanning window to reduce spectral leakage
+        windowed_data = audio_data * np.hanning(len(audio_data))
+
+        # Perform FFT and get spectrum magnitude
+        fft_data = np.abs(np.fft.rfft(windowed_data))
+
+        # Avoid division by zero
+        if np.max(fft_data) > 0:
+            fft_data /= np.max(fft_data)
+
+        # Apply logarithmic scaling (numerically stable)
+        fft_data = np.log1p(fft_data)
 
         indices = np.linspace(0, len(fft_data) - 1, NUM_BARS).astype(int)
         new_spectrum = fft_data[indices]
@@ -108,7 +116,7 @@ def update_spectrum(threshold, min_bar_height, smoothing_factor):
         draw_spectrum(smoothed_spectrum, min_bar_height)
 
         # Limit the frame rate to 60 FPS
-        clock.tick(60)
+        clock.tick(visualizergui.FPS)
 
     stream.stop_stream()
     stream.close()
