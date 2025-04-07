@@ -83,7 +83,7 @@ def draw_ui(screen):
     pygame.display.flip()
 
 def handle_ui_events():
-    """Handle user input, including text input and button clicks."""
+    # Handle user input, including text input and button clicks.
     global active_box
     start_program = False
 
@@ -137,7 +137,7 @@ def handle_ui_events():
     return threshold, min_bar_height, smoothing_factor, start_program
 
 def run_ui():
-    """Runs the UI and returns user settings when 'Start' is clicked."""
+    # Runs the UI and returns user settings when 'Start' is clicked.
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     while True:

@@ -213,6 +213,8 @@
       <workItem from="1743887641823" duration="1662000" />
       <workItem from="1743889342547" duration="2180000" />
       <workItem from="1743966326264" duration="2613000" />
+      <workItem from="1743975709321" duration="517000" />
+      <workItem from="1743985793803" duration="831000" />
     </task>
     <task id="LOCAL-00001" summary="Initial Commit">
       <option name="closed" value="true" />
@@ -288,7 +290,7 @@
     <option name="LAST_COMMIT_MESSAGE" value="4/5 commit" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/audiovisualizer_py$main.coverage" NAME="main Coverage Results" MODIFIED="1743968959793" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
+    <SUITE FILE_PATH="coverage/audiovisualizer_py$main.coverage" NAME="main Coverage Results" MODIFIED="1743985968691" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/audiovisualizer$audiovisualizer.coverage" NAME="audiovisualizer Coverage Results" MODIFIED="1743659245246" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/audiovisualizer$script.coverage" NAME="devicefinderscript Coverage Results" MODIFIED="1743618132204" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
     <SUITE FILE_PATH="coverage/audiovisualizer$devicefinderscript__1_.coverage" NAME="devicefinderscript (1) Coverage Results" MODIFIED="1743619073454" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
