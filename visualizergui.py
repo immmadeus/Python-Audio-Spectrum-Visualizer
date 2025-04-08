@@ -47,7 +47,7 @@ user_input = {
 
 active_box = None
 cursor_pos = {key: len(user_input[key]) for key in text_boxes}  # Cursor position per box
-start_button = pygame.Rect(WIDTH//2, HEIGHT//2, 170, 40)
+start_button = pygame.Rect(WIDTH//2, HEIGHT//2, 325, 50)
 
 # Draw the UI, including text boxes and the blinking cursor.
 def draw_ui(screen):
@@ -77,7 +77,7 @@ def draw_ui(screen):
 
     # Draw Start Button
     pygame.draw.rect(screen, GREEN, start_button)
-    start_text = FONT.render("Click to Start!", True, WHITE)
+    start_text = FONT.render("Click here or Press Enter to Start!", True, WHITE)
     screen.blit(start_text, (start_button.x + 25, start_button.y + 10))
 
     pygame.display.flip()
@@ -102,6 +102,9 @@ def handle_ui_events():
                         break
                 else:
                     active_box = None
+            case pygame.KEYDOWN if not active_box:
+                if event.key is pygame.K_RETURN:
+                    start_program = True
             case pygame.KEYDOWN if active_box:
                 match event.key:
                     case pygame.K_RETURN:
