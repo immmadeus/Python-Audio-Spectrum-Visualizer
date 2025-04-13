@@ -8,8 +8,8 @@ def main():
     # Call the UI and get values
     threshold, min_bar_height, smoothing_factor = visualizergui.run_ui()
     pygame.display.set_caption(f"Audio Spectrum Visualizer - Input: {audiovisualizer.device_name}")
+
     try:
-        # begin the program
         update_spectrum(threshold, min_bar_height, smoothing_factor)
     finally:
         pygame.quit()
