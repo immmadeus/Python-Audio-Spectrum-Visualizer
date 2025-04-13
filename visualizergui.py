@@ -20,36 +20,36 @@ else:
     print("Warning: Icon file not found!")
 
 # Constants
+FONT = pygame.font.SysFont('franklingothicmedium', 20, False, True)
+WIDTH, HEIGHT = 1024,240
 WHITE = (255, 255, 255)
 GREEN = (50, 150, 50)
 BLACK = (0, 0, 0)
 
-# To be made adjustable via GUI soon...
-WIDTH, HEIGHT = 1024, 240
-FPS = 60
-START_COLOR = (255, 0, 0)
-END_COLOR = (0, 0, 255)
-FONT = pygame.font.SysFont('franklingothicmedium', 20, False, True)
-
 # UI Elements
 text_boxes = {
-    "threshold": pygame.Rect(250, 10, 80, 25),
-    "min_bar_height": pygame.Rect(250, 40, 80, 25),
-    "smoothing_factor": pygame.Rect(250, 70, 80, 25),
+    "threshold": pygame.Rect(250, 10, 110, 30),
+    "min_bar_height": pygame.Rect(250, 40, 110, 30),
+    "smoothing_factor": pygame.Rect(250, 70, 110, 30),
+    "fps": pygame.Rect(250, 100, 110, 30),
+    "start_color": pygame.Rect(250, 130, 110, 30),
+    "end_color": pygame.Rect(250, 160, 110, 30),
 }
 
-# default values
+# Default values
 user_input = {
     "threshold": "2.5",
     "min_bar_height": "5",
-    "smoothing_factor": "0.25",
+    "smoothing_factor": "0.15",
+    "fps": "60",
+    "start_color": "255,0,0",
+    "end_color": "0,0,255",
 }
 
 active_box = None
-cursor_pos = {key: len(user_input[key]) for key in text_boxes}  # Cursor position per box
+cursor_pos = {key: len(user_input[key]) for key in text_boxes}
 start_button = pygame.Rect(WIDTH//2, HEIGHT//2, 325, 50)
 
-# Draw the UI, including text boxes and the blinking cursor.
 def draw_ui(screen):
     screen.fill(BLACK)
 
@@ -57,6 +57,9 @@ def draw_ui(screen):
         "threshold": "Minimum Threshold %:",
         "min_bar_height": "Min Bar Height in pixels:",
         "smoothing_factor": "Smoothing Factor (0 to 1):",
+        "fps": "FPS:",
+        "start_color": "Start Color (R,G,B):",
+        "end_color": "End Color (R,G,B):",
     }
 
     for key, rect in text_boxes.items():
@@ -64,18 +67,15 @@ def draw_ui(screen):
         screen.blit(label, (10, rect.y + 3))
         pygame.draw.rect(screen, WHITE, rect, 2)
 
-        # Render text
         text_surface = FONT.render(user_input[key], True, WHITE)
         screen.blit(text_surface, (rect.x + 5, rect.y + 3))
 
-        # Cursor blinking logic
         if key == active_box:
-            time_elapsed = pygame.time.get_ticks() // 500  # Blinks every 500ms
+            time_elapsed = pygame.time.get_ticks() // 500
             if time_elapsed % 2 == 0:
                 cursor_x = rect.x + 5 + FONT.size(user_input[key][:cursor_pos[key]])[0]
                 pygame.draw.line(screen, WHITE, (cursor_x, rect.y + 5), (cursor_x, rect.y + 20), 2)
 
-    # Draw Start Button
     pygame.draw.rect(screen, GREEN, start_button)
     start_text = FONT.render("Click here or Press Enter to Start!", True, WHITE)
     screen.blit(start_text, (start_button.x + 25, start_button.y + 10))
@@ -90,10 +90,8 @@ def handle_ui_events():
         if event.type == pygame.QUIT:
             pygame.quit()
             exit()
-
         elif event.type == pygame.MOUSEBUTTONDOWN:
             start_program = handle_mouse_click(event)
-
         elif event.type == pygame.KEYDOWN:
             if not active_box:
                 start_program = handle_key_no_focus(event)
@@ -101,7 +99,6 @@ def handle_ui_events():
                 handle_key_with_focus(event)
 
     return get_validated_inputs() + (start_program,)
-
 
 def handle_mouse_click(event):
     global active_box
@@ -120,13 +117,11 @@ def handle_mouse_click(event):
 def handle_key_no_focus(event):
     return event.key == pygame.K_RETURN
 
-
 def handle_key_with_focus(event):
     global active_box
-
     key = active_box
     if key is None or key not in user_input:
-        return  # Prevent using None or invalid key
+        return
 
     text = user_input[key]
     pos = cursor_pos[key]
@@ -145,34 +140,38 @@ def handle_key_with_focus(event):
             if pos < len(text):
                 cursor_pos[key] += 1
         case _:
-            if event.unicode.isdigit() or (
-                event.unicode in {'.', '-'} and event.unicode not in text
-            ):
+            if event.unicode.isdigit() or event.unicode in {'.', '-', ','}:
                 user_input[key] = text[:pos] + event.unicode + text[pos:]
                 cursor_pos[key] += 1
 
-
+def parse_color(value, default):
+    try:
+        r, g, b = map(int, value.split(','))
+        return tuple(max(0, min(255, c)) for c in (r, g, b))
+    except:
+        return default
 
 def get_validated_inputs():
     try:
         threshold = float(user_input["threshold"]) / 100 or 0.025
         min_bar_height = float(user_input["min_bar_height"]) or 5
-        smoothing_factor = float(user_input["smoothing_factor"]) or 0.25
+        smoothing_factor = float(user_input["smoothing_factor"]) or 0.15
+        fps = int(user_input["fps"]) or 60
+        start_color = parse_color(user_input["start_color"], (255, 0, 0))
+        end_color = parse_color(user_input["end_color"], (0, 0, 255))
     except ValueError:
-        threshold, min_bar_height, smoothing_factor = 0.025, 5, 0.25
+        threshold, min_bar_height, smoothing_factor = 0.025, 5, 0.15
+        fps = 60
+        start_color, end_color = (255, 0, 0), (0, 0, 255)
 
-    return threshold, min_bar_height, smoothing_factor
-
+    return threshold, min_bar_height, smoothing_factor, fps, start_color, end_color
 
 def run_ui():
-    # Runs the UI and returns user settings when 'Start' is clicked.
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     while True:
         draw_ui(screen)
-        threshold, min_bar_height, smoothing_factor, start_program = handle_ui_events()
+        threshold, min_bar_height, smoothing_factor, fps, start_color, end_color, start_program = handle_ui_events()
 
         if start_program:
-            # Proceed only if the inputs are valid
-            if threshold and min_bar_height and smoothing_factor:
-                return threshold, min_bar_height, smoothing_factor
+            return threshold, min_bar_height, smoothing_factor, fps, start_color, end_color

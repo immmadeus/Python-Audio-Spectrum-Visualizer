@@ -2,7 +2,6 @@ import numpy as np
 import pyaudio
 import pygame
 import visualizergui
-from visualizergui import handle_ui_events
 
 # Initialize Pygame and PyAudio
 pygame.init()
@@ -26,9 +25,9 @@ font = pygame.font.SysFont('franklingothicmedium', 13, False, True)
 def create_stream():
     return p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, input_device_index=0, frames_per_buffer=CHUNK)
 
-def draw_spectrum(spectrum, min_bar_height):
+def draw_spectrum(spectrum, min_bar_height, start_color, end_color):
     """Draw the audio spectrum on the screen with logarithmically spaced frequency labels."""
-    screen.fill((0, 0, 0))
+    screen.fill(visualizergui.BLACK)
     bar_width = WIDTH // NUM_BARS
 
     # Define label positions for frequencies
@@ -52,16 +51,13 @@ def draw_spectrum(spectrum, min_bar_height):
     for i, magnitude in enumerate(spectrum):
         height = int(magnitude * (HEIGHT - 50))  # Scale bars within max area
         height = max(height, min_bar_height)  # Ensure minimum size for the bars
-        color = get_color_for_frequency(i, NUM_BARS)  # Color based on frequency
+        color = get_color_for_frequency(i, NUM_BARS, start_color, end_color)  # Color based on frequency
         pygame.draw.rect(screen, color, (i * bar_width, HEIGHT - height, bar_width - 2, height))
 
     pygame.display.flip()
 
 #blends two colors together for gradient
-def get_color_for_frequency(frequency_index, num_bars):
-    start_color = visualizergui.START_COLOR
-    end_color = visualizergui.END_COLOR
-
+def get_color_for_frequency(frequency_index, num_bars, start_color, end_color):
     ratio = frequency_index / (num_bars - 1) if num_bars > 1 else 0
     return tuple(
         int(start_c * (1 - ratio) + end_c * ratio)
@@ -69,29 +65,27 @@ def get_color_for_frequency(frequency_index, num_bars):
     )
 
 # Function to update the spectrum based on audio input
-def update_spectrum(threshold, min_bar_height, smoothing_factor):
+def update_spectrum(threshold, min_bar_height, smoothing_factor, fps, start_color, end_color):
     stream = create_stream()
     smoothed_spectrum = np.zeros(NUM_BARS)
     running = True
-    clock = pygame.time.Clock()  # Limit frame rate
+    clock = pygame.time.Clock()
 
     while running:
         for event in pygame.event.get():
-            if event.type is pygame.QUIT:
+            if event.type == pygame.QUIT:
                 running = False
-            threshold, min_bar_height, smoothing_factor, start_program = handle_ui_events()
-
-            if start_program:
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 running = False
 
         data = stream.read(CHUNK, exception_on_overflow=False)
         audio_data = np.frombuffer(data, dtype=np.int16)
-        audio_data = audio_data - np.mean(audio_data)  # Remove DC offset
+        audio_data = audio_data - np.mean(audio_data)
 
         if CHANNELS > 1:
             audio_data = audio_data[0::CHANNELS]
 
-        # Apply hanning window to reduce spectral leakage
+            # Apply hanning window to reduce spectral leakage
         windowed_data = audio_data * np.hanning(len(audio_data))
 
         # Perform FFT and get spectrum magnitude
@@ -113,10 +107,10 @@ def update_spectrum(threshold, min_bar_height, smoothing_factor):
         smoothed_spectrum = np.where(smoothed_spectrum <= threshold, min_magnitude, smoothed_spectrum)
 
         # Draw the spectrum on screen
-        draw_spectrum(smoothed_spectrum, min_bar_height)
+        draw_spectrum(smoothed_spectrum, min_bar_height, start_color, end_color)
 
-        # Limit the frame rate to 60 FPS
-        clock.tick(visualizergui.FPS)
+        # Limit frame rate
+        clock.tick(fps)
 
     stream.stop_stream()
     stream.close()
