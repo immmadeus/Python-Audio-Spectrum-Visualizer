@@ -10,9 +10,9 @@ WIDTH, HEIGHT = visualizergui.WIDTH, visualizergui.HEIGHT
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 p = pyaudio.PyAudio()
 
-# Get default audio input info
+# Get default audio input info and device name
 device_info = p.get_default_input_device_info()
-device_name = device_info['name']  # Get the device name
+device_name = device_info['name']
 
 # Default audio config
 FORMAT = pyaudio.paInt16

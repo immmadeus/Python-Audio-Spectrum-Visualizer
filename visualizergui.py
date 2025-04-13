@@ -47,7 +47,7 @@ user_input = {
 
 active_box = None
 cursor_pos = {key: len(user_input[key]) for key in text_boxes}  # Cursor position per box
-start_button = pygame.Rect(WIDTH//2, HEIGHT//2, 170, 40)
+start_button = pygame.Rect(WIDTH//2, HEIGHT//2, 325, 50)
 
 # Draw the UI, including text boxes and the blinking cursor.
 def draw_ui(screen):
@@ -77,67 +77,95 @@ def draw_ui(screen):
 
     # Draw Start Button
     pygame.draw.rect(screen, GREEN, start_button)
-    start_text = FONT.render("Click to Start!", True, WHITE)
+    start_text = FONT.render("Click here or Press Enter to Start!", True, WHITE)
     screen.blit(start_text, (start_button.x + 25, start_button.y + 10))
 
     pygame.display.flip()
 
 def handle_ui_events():
-    """Handle user input, including text input and button clicks."""
     global active_box
     start_program = False
 
     for event in pygame.event.get():
-        match event.type:
-            case pygame.QUIT:
-                pygame.quit()
-                exit()
-            case pygame.MOUSEBUTTONDOWN:
-                if start_button.collidepoint(event.pos):
-                    start_program = True
-                for key, rect in text_boxes.items():
-                    if rect.collidepoint(event.pos):
-                        active_box = key
-                        cursor_pos[key] = len(user_input[key])  # Place cursor at end
-                        break
-                else:
-                    active_box = None
-            case pygame.KEYDOWN if active_box:
-                match event.key:
-                    case pygame.K_RETURN:
-                        active_box = None
-                    case pygame.K_BACKSPACE:
-                        if cursor_pos[active_box] > 0:
-                            user_input[active_box] = user_input[active_box][:cursor_pos[active_box] - 1] + user_input[
-                                                                                                               active_box][
-                                                                                                           cursor_pos[
-                                                                                                               active_box]:]
-                            cursor_pos[active_box] -= 1
-                    case pygame.K_LEFT:
-                        if cursor_pos[active_box] > 0:
-                            cursor_pos[active_box] -= 1
-                    case pygame.K_RIGHT:
-                        if cursor_pos[active_box] < len(user_input[active_box]):
-                            cursor_pos[active_box] += 1
-                    case _ if event.unicode.isdigit() or (
-                                event.unicode in {'.', '-'} and event.unicode not in user_input[active_box]):
-                        user_input[active_box] = user_input[active_box][:cursor_pos[active_box]] + event.unicode + \
-                                                 user_input[active_box][cursor_pos[active_box]:]
-                        cursor_pos[active_box] += 1
+        if event.type == pygame.QUIT:
+            pygame.quit()
+            exit()
 
-    # Check for empty input fields before assigning values.
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            start_program = handle_mouse_click(event)
+
+        elif event.type == pygame.KEYDOWN:
+            if not active_box:
+                start_program = handle_key_no_focus(event)
+            else:
+                handle_key_with_focus(event)
+
+    return get_validated_inputs() + (start_program,)
+
+
+def handle_mouse_click(event):
+    global active_box
+    if start_button.collidepoint(event.pos):
+        return True
+
+    for key, rect in text_boxes.items():
+        if rect.collidepoint(event.pos):
+            active_box = key
+            cursor_pos[key] = len(user_input[key])
+            return False
+
+    active_box = None
+    return False
+
+def handle_key_no_focus(event):
+    return event.key == pygame.K_RETURN
+
+
+def handle_key_with_focus(event):
+    global active_box
+
+    key = active_box
+    if key is None or key not in user_input:
+        return  # Prevent using None or invalid key
+
+    text = user_input[key]
+    pos = cursor_pos[key]
+
+    match event.key:
+        case pygame.K_RETURN:
+            active_box = None
+        case pygame.K_BACKSPACE:
+            if pos > 0:
+                user_input[key] = text[:pos - 1] + text[pos:]
+                cursor_pos[key] -= 1
+        case pygame.K_LEFT:
+            if pos > 0:
+                cursor_pos[key] -= 1
+        case pygame.K_RIGHT:
+            if pos < len(text):
+                cursor_pos[key] += 1
+        case _:
+            if event.unicode.isdigit() or (
+                event.unicode in {'.', '-'} and event.unicode not in text
+            ):
+                user_input[key] = text[:pos] + event.unicode + text[pos:]
+                cursor_pos[key] += 1
+
+
+
+def get_validated_inputs():
     try:
-        threshold = (float(user_input["threshold"]) / 100) if user_input["threshold"] else 0.025
-        min_bar_height = float(user_input["min_bar_height"]) if user_input["min_bar_height"] else 5
-        smoothing_factor = float(user_input["smoothing_factor"]) if user_input["smoothing_factor"] else 0.25
-
+        threshold = float(user_input["threshold"]) / 100 or 0.025
+        min_bar_height = float(user_input["min_bar_height"]) or 5
+        smoothing_factor = float(user_input["smoothing_factor"]) or 0.25
     except ValueError:
-        threshold, min_bar_height, smoothing_factor = 0.025, 5, 0.25  # Default values in case of invalid input
+        threshold, min_bar_height, smoothing_factor = 0.025, 5, 0.25
 
-    return threshold, min_bar_height, smoothing_factor, start_program
+    return threshold, min_bar_height, smoothing_factor
+
 
 def run_ui():
-    """Runs the UI and returns user settings when 'Start' is clicked."""
+    # Runs the UI and returns user settings when 'Start' is clicked.
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
 
     while True:
