@@ -25,6 +25,8 @@ WIDTH, HEIGHT = 1024,240
 WHITE = (255, 255, 255)
 GREEN = (50, 150, 50)
 BLACK = (0, 0, 0)
+start_text = FONT.render("Click here or Press Enter to Start!", True, WHITE)
+version_number = FONT.render("v0.0.5-alpha", True, WHITE)
 
 # UI Elements
 text_boxes = {
@@ -77,10 +79,9 @@ def draw_ui(screen):
                 pygame.draw.line(screen, WHITE, (cursor_x, rect.y + 5), (cursor_x, rect.y + 20), 2)
 
     pygame.draw.rect(screen, GREEN, start_button)
-    start_text = FONT.render("Click here or Press Enter to Start!", True, WHITE)
     screen.blit(start_text, (start_button.x + 25, start_button.y + 10))
     #version number
-    screen.blit(FONT.render("v0.0.5-alpha", True, WHITE), (WIDTH-110,HEIGHT-25))
+    screen.blit(version_number, (WIDTH-110,HEIGHT-25))
 
     pygame.display.flip()
 
