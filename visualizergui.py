@@ -79,6 +79,8 @@ def draw_ui(screen):
     pygame.draw.rect(screen, GREEN, start_button)
     start_text = FONT.render("Click here or Press Enter to Start!", True, WHITE)
     screen.blit(start_text, (start_button.x + 25, start_button.y + 10))
+    #version number
+    screen.blit(FONT.render("v0.0.5-alpha", True, WHITE), (WIDTH-110,HEIGHT-25))
 
     pygame.display.flip()
 
