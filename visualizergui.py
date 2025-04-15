@@ -90,16 +90,17 @@ def handle_ui_events():
     start_program = False
 
     for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            pygame.quit()
-            exit()
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            start_program = handle_mouse_click(event)
-        elif event.type == pygame.KEYDOWN:
-            if not active_box:
-                start_program = handle_key_no_focus(event)
-            else:
-                handle_key_with_focus(event)
+        match event.type:
+            case pygame.QUIT:
+                pygame.quit()
+                exit()
+            case pygame.MOUSEBUTTONDOWN:
+                start_program = handle_mouse_click(event)
+            case pygame.KEYDOWN:
+                if not active_box:
+                    start_program = handle_key_no_focus(event)
+                else:
+                    handle_key_with_focus(event)
 
     return get_validated_inputs() + (start_program,)
 
@@ -118,7 +119,7 @@ def handle_mouse_click(event):
     return False
 
 def handle_key_no_focus(event):
-    return event.key == pygame.K_RETURN
+     return event.key == pygame.K_RETURN or pygame.K_ESCAPE or pygame.K_KP_ENTER or pygame.K_SPACE
 
 def handle_key_with_focus(event):
     global active_box
