@@ -1,7 +1,10 @@
 import sys
 import os
 import pygame
+import datetime
+
 pygame.init()
+now = datetime.datetime.now()
 
 pygame.display.set_caption(f"Audio Spectrum Visualizer - Settings")
 
@@ -19,14 +22,15 @@ if os.path.exists(icon_path):
 else:
     print("Warning: Icon file not found!")
 
-# Constants
 FONT = pygame.font.SysFont('franklingothicmedium', 20, False, True)
 WIDTH, HEIGHT = 1024,240
 WHITE = (255, 255, 255)
 GREEN = (50, 150, 50)
 BLACK = (0, 0, 0)
 start_text = FONT.render("Click here or Press Enter to Start!", True, WHITE)
-version_number = FONT.render("v0.0.5-alpha", True, WHITE)
+version_number = FONT.render("v0.0.6-alpha", True, WHITE)
+time_stamp = "%a, %b %d, %Y  %I:%M %p"
+current_time = FONT.render(now.strftime(time_stamp), True, WHITE)
 
 # UI Elements
 text_boxes = {
@@ -78,10 +82,15 @@ def draw_ui(screen):
                 cursor_x = rect.x + 5 + FONT.size(user_input[key][:cursor_pos[key]])[0]
                 pygame.draw.line(screen, WHITE, (cursor_x, rect.y + 5), (cursor_x, rect.y + 20), 2)
 
+    #start button
     pygame.draw.rect(screen, GREEN, start_button)
     screen.blit(start_text, (start_button.x + 25, start_button.y + 10))
+
     #version number
     screen.blit(version_number, (WIDTH-110,HEIGHT-25))
+
+    #current time
+    screen.blit(current_time, (WIDTH-len(time_stamp)*11,0))
 
     pygame.display.flip()
 
