@@ -1,18 +1,21 @@
-import sys
-import os
-import pygame
 import datetime
+import os
+import sys
+
+import pygame
 
 pygame.init()
 now = datetime.datetime.now()
 
 pygame.display.set_caption("Audio Spectrum Visualizer - Settings")
 
+
 # Function to handle file paths correctly when running as an executable
 def resource_path(relative_path):
     if hasattr(sys, '_MEIPASS'):
         return os.path.join(sys._MEIPASS, relative_path)
     return os.path.join(os.path.dirname(__file__), relative_path)
+
 
 # Load icon with safe path handling
 icon_path = resource_path("icon-1628258_1280.ico")
@@ -27,7 +30,7 @@ WHITE = (255, 255, 255)
 GREEN = (50, 150, 50)
 BLACK = (0, 0, 0)
 start_text = FONT.render("Click here or Press Enter to Start!", True, WHITE)
-version_number = FONT.render("v0.0.6-alpha", True, WHITE)
+version_number = FONT.render("v0.0.7-alpha", True, WHITE)
 time_stamp = "%a, %b %d, %Y  %I:%M %p"
 
 # UI Element positions and default values
@@ -51,7 +54,8 @@ user_input = {
 
 active_box = None
 cursor_pos = {key: len(user_input[key]) for key in text_boxes}
-start_button = pygame.Rect(WIDTH//2, HEIGHT//2, 325, 50)
+start_button = pygame.Rect(WIDTH // 2, HEIGHT // 2, 325, 50)
+
 
 # Draw UI elements
 def draw_ui(screen):
@@ -76,9 +80,10 @@ def draw_ui(screen):
 
     # Draw version and current time
     screen.blit(version_number, (WIDTH - 110, HEIGHT - 25))
-    screen.blit(current_time, (WIDTH - len(time_stamp)*11, 0))
+    screen.blit(current_time, (int(WIDTH - len(time_stamp) * 11.5), 0))
 
     pygame.display.flip()
+
 
 def draw_textbox(screen, key, rect, label):
     """Draw a labeled textbox with text input."""
@@ -92,12 +97,14 @@ def draw_textbox(screen, key, rect, label):
     if key == active_box:
         draw_cursor(screen, rect, key)
 
+
 def draw_cursor(screen, rect, key):
     """Draw blinking cursor in active textbox."""
     time_elapsed = pygame.time.get_ticks() // 500
     if time_elapsed % 2 == 0:
         cursor_x = rect.x + 5 + FONT.size(user_input[key][:cursor_pos[key]])[0]
         pygame.draw.line(screen, WHITE, (cursor_x, rect.y + 5), (cursor_x, rect.y + 20), 2)
+
 
 # Handle UI events
 def handle_ui_events():
@@ -118,6 +125,7 @@ def handle_ui_events():
 
     return get_validated_inputs() + (start_program,)
 
+
 def handle_mouse_click(event):
     global active_box
     if start_button.collidepoint(event.pos):
@@ -132,8 +140,10 @@ def handle_mouse_click(event):
     active_box = None
     return False
 
+
 def handle_key_no_focus(event):
     return event.key in {pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_KP_ENTER, pygame.K_SPACE}
+
 
 def handle_key_with_focus(event):
     global active_box
@@ -162,6 +172,7 @@ def handle_key_with_focus(event):
                 user_input[key] = text[:pos] + event.unicode + text[pos:]
                 cursor_pos[key] += 1
 
+
 # Parse color input
 def parse_color(value, default):
     try:
@@ -169,6 +180,7 @@ def parse_color(value, default):
         return tuple(max(0, min(255, c)) for c in (r, g, b))
     except:
         return default
+
 
 # Validate user inputs
 def get_validated_inputs():
@@ -185,6 +197,7 @@ def get_validated_inputs():
         start_color, end_color = (255, 0, 0), (0, 0, 255)
 
     return threshold, min_bar_height, smoothing_factor, fps, start_color, end_color
+
 
 # Main UI loop
 def run_ui():

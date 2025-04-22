@@ -1,6 +1,7 @@
 import numpy as np
 import pyaudio
 import pygame
+
 import visualizergui
 
 # Initialize Pygame and PyAudio
@@ -21,9 +22,12 @@ RATE = int(device_info['defaultSampleRate'])
 NUM_BARS = WIDTH // 5  # Number of bars in visualization
 font = pygame.font.SysFont('franklingothicmedium', 13, False, True)
 
+
 # Audio stream setup
 def create_stream():
-    return p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, input_device_index=0, frames_per_buffer=CHUNK)
+    return p.open(format=FORMAT, channels=CHANNELS, rate=RATE, input=True, input_device_index=0,
+                  frames_per_buffer=CHUNK)
+
 
 # Draw frequency spectrum
 def draw_spectrum(spectrum, min_bar_height, start_color, end_color):
@@ -48,6 +52,7 @@ def draw_spectrum(spectrum, min_bar_height, start_color, end_color):
 
     pygame.display.flip()
 
+
 def draw_frequency_label(i, freq, bar_width, label_y):
     """Draw frequency label and vertical line."""
     freq_text = font.render(f'{int(freq)} Hz', True, visualizergui.WHITE)
@@ -56,6 +61,7 @@ def draw_frequency_label(i, freq, bar_width, label_y):
     screen.blit(freq_text, (label_x, label_y))
     pygame.draw.line(screen, (96, 96, 96), (label_x - 3, label_y), (label_x - 3, HEIGHT), bar_width - 2)
 
+
 # Blends two colors together for gradient
 def get_color_for_frequency(frequency_index, num_bars, start_color, end_color):
     ratio = frequency_index / (num_bars - 1) if num_bars > 1 else 0
@@ -63,6 +69,7 @@ def get_color_for_frequency(frequency_index, num_bars, start_color, end_color):
         int(start_c * (1 - ratio) + end_c * ratio)
         for start_c, end_c in zip(start_color, end_color)
     )
+
 
 # Main spectrum update function
 def update_spectrum(threshold, min_bar_height, smoothing_factor, fps, start_color, end_color):
@@ -73,7 +80,8 @@ def update_spectrum(threshold, min_bar_height, smoothing_factor, fps, start_colo
     running = True
     while running:
         for event in pygame.event.get():
-            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key in (pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_KP_ENTER):
+            if event.type == pygame.QUIT or event.type == pygame.KEYDOWN and event.key in (
+                    pygame.K_RETURN, pygame.K_ESCAPE, pygame.K_KP_ENTER):
                 running = False
 
         data = stream.read(CHUNK, exception_on_overflow=False)
