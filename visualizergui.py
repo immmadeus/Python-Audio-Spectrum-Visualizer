@@ -27,7 +27,7 @@ WHITE = (255, 255, 255)
 GREEN = (50, 150, 50)
 BLACK = (0, 0, 0)
 start_text = FONT.render("Click here or Press Enter to Start!", True, WHITE)
-version_number = FONT.render("v0.0.6-alpha", True, WHITE)
+version_number = FONT.render("v1.0", True, WHITE)
 time_stamp = "%a, %b %d, %Y  %I:%M %p"
 
 # UI Element positions and default values
